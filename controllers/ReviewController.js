@@ -1,11 +1,15 @@
 import ReviewModel from "../models/ReviewModel.js"
 import UserModel from "../models/UserModel.js"
+import BookModel from "../models/BookModel.js"
 
-export const getAll = async (req, res) => {
+export const getReviews = async (req, res) => {
     try {
         const bookId = req.params.bookId
 
-        const reviews = await ReviewModel.find({ bookId });
+        const reviews = await ReviewModel.find(
+            { 
+                bookId 
+            });
 
         res.json(reviews);
 
@@ -17,20 +21,48 @@ export const getAll = async (req, res) => {
     }
 }
 
-export const create = async (req, res) => {
+export const getUserReviews = async (req, res) => {
+    try {
+        const userId = req.params.userId
+
+        const reviews = await ReviewModel.find(
+            { 
+                userId 
+            });
+
+        res.json(reviews);
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({
+            message: "Unable to get reviews"
+        })
+    }
+}
+
+export const createReview = async (req, res) => {
     try {
         const bookId = req.params.bookId
 
         const userData = await UserModel.findOne({ _id: req.userId })
 
-        const userName = userData.userName;
+        const bookData = await BookModel.findOne({ _id: bookId })
 
         const doc = new ReviewModel({
             bookId,
-            userId: req.userId,
-            userName,
+            bookInfo: {
+                bookImage: bookData.img,
+                bookTitle: bookData.title,
+                bookAuthor: bookData.author,
+            },
+            userId : req.userId,
+            userInfo: {
+                userName: userData.userName,
+                userCreatedAt: userData.createdAt,
+            },
             text: req.body.text,
             rating: req.body.rating,
+            likes: [],
         })
 
          const review = await doc.save()
@@ -45,16 +77,16 @@ export const create = async (req, res) => {
     }
 }
 
-export const remove = async (req, res) => {
+export const deleteReview = async (req, res) => {
     try {
         const reviewId = req.params.reviewId;
 
-        const doc = await ReviewModel.findOneAndDelete(
+        const review = await ReviewModel.findOneAndDelete(
             { 
                 _id: reviewId 
             });
 
-        if (!doc) {
+        if (!review) {
             return res.status(400).json({
                 message: "Review not found"
             });
@@ -72,7 +104,7 @@ export const remove = async (req, res) => {
     }
 };
 
-export const update = async (req, res) => {
+export const updateReview = async (req, res) => {
     try {
         const reviewId = req.params.reviewId;
 
@@ -93,6 +125,57 @@ export const update = async (req, res) => {
         console.error(err);
         res.status(500).json({
             message: "Unable to update review"
+        });
+    }
+};
+
+export const toggleLikeReview = async (req, res) => {
+    try {
+        const reviewId = req.params.reviewId;
+        const userId = req.userId;
+
+        const review = await ReviewModel.findOne({ _id: reviewId });
+
+        const index = review.likes.indexOf(userId);
+        
+        if (index === -1) {
+            review.likes.push(userId);
+        } else {
+            review.likes.splice(index, 1);
+        }
+
+        await review.save();
+        
+        res.json(review.likes);
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Unable to toggle like for review"
+        });
+    }
+};
+
+export const commentReview = async (req, res) => {
+    try {
+        const reviewId = req.params.reviewId;
+        const userId = req.userId;
+
+        const review = await ReviewModel.findOne({ _id: reviewId });
+        
+        review.comments.push({
+            userId,
+            text: req.body.text,
+        })
+
+        await review.save();
+        
+        res.json(review.comments);
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Unable to toggle like for review"
         });
     }
 };

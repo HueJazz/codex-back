@@ -15,3 +15,7 @@ export const reviewCreateValidation = [
     body('text').isLength({min: 3}).isString(),
     body('rating').isNumeric(),
 ]
+
+export const listCreateValidation = [
+    body('listName').isLength({min: 1}).isString(),
+]

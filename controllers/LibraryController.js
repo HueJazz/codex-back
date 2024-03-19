@@ -61,7 +61,10 @@ export const removeFromLibrary = async (req, res) => {
 
         const bookId = req.params.bookId
 
-        let library = await LibraryModel.findOne({ userId: req.userId });
+        let library = await LibraryModel.findOne(
+            { 
+                userId: req.userId 
+            });
 
         if (!library) {
             return res.status(400).json({

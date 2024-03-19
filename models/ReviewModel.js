@@ -2,7 +2,12 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema({
   bookId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book',
+    required: true,
+  },
+  bookInfo: {
+    type: Object,
     required: true,
   },
   userId: {
@@ -10,8 +15,8 @@ const reviewSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  userName: {
-    type: String,
+  userInfo: {
+    type: Object,
     required: true,
   },
   text: {
@@ -22,6 +27,14 @@ const reviewSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  likes: {
+    type: Array,
+    required: true,
+  },
+  comments: {
+    type: Array,
+    required: true,
+  }
 },
   {
     timestamps: true,
